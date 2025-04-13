@@ -1,4 +1,3 @@
-// server.js
 import express from "express";
 import dotenv from "dotenv";
 import { clerkMiddleware } from "@clerk/express";
@@ -35,7 +34,7 @@ initializeSocket(httpServer);
 // 🔐 Middleware
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.FRONTEND_URL || "http://localhost:3000", 
     credentials: true,
   })
 );
@@ -100,5 +99,5 @@ app.use((err, req, res, next) => {
 // 🚀 Start Server
 httpServer.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
-  connectDB();
+  connectDB(); 
 });
