@@ -1,5 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+
 import { clerkMiddleware } from "@clerk/express";
 import fileUpload from "express-fileupload";
 import path from "path";
@@ -19,11 +21,11 @@ import songRoutes from "./routes/song.route.js";
 import albumRoutes from "./routes/album.route.js";
 import statRoutes from "./routes/stat.route.js";
 
-// 📦 Environment Setup
-dotenv.config();
+// 📦 File Path Setup
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// 🚀 App Initialization
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -34,7 +36,7 @@ initializeSocket(httpServer);
 // 🔐 Middleware
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000", 
+    origin: [process.env.FRONTEND_URL, "http://localhost:5173"],
     credentials: true,
   })
 );
@@ -69,7 +71,7 @@ cron.schedule("0 * * * *", () => {
   }
 });
 
-// 🧭 Routes
+// 🧭 API Routes
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
@@ -77,11 +79,13 @@ app.use("/api/songs", songRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
 
-// 🖼️ Serve React Frontend (Production Only)
+// 🖼️ Serve Frontend in Production (Vite build)
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+  const frontendPath = path.join(__dirname, "../frontend/dist"); 
+  app.use(express.static(frontendPath));
+
   app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "../frontend", "dist", "index.html"));
+    res.sendFile(path.join(frontendPath, "index.html"));
   });
 }
 
@@ -96,8 +100,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 🚀 Start Server
+// 🔗 Connect to DB + Start Server
 httpServer.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
-  connectDB(); 
+  connectDB();
 });
